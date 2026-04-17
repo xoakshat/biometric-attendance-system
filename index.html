@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Biometric Attendance System - SRMU</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        /* Stats Cards */
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-card h3 {
+            color: #666;
+            font-size: 1em;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .stat-card .number {
+            font-size: 3em;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .stat-card.total .number { color: #667eea; }
+        .stat-card.present .number { color: #48bb78; }
+        .stat-card.absent .number { color: #f56565; }
+
+        /* Control Panel */
+        .control-panel {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .control-panel h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 15px 30px;
+            font-size: 1.1em;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+            color: white;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #f56565 0%, #c53030 100%);
+            color: white;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Student List */
+        .student-list {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .student-list h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        th {
+            background: #f7fafc;
+            font-weight: 600;
+            color: #4a5568;
+            text-transform: uppercase;
+            font-size: 0.9em;
+            letter-spacing: 0.5px;
+        }
+
+        tr:hover {
+            background: #f7fafc;
+        }
+
+        .status-badge {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .status-present {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+
+        .status-absent {
+            background: #fed7d7;
+            color: #742a2a;
+        }
+
+        /* Message Box */
+        .message {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            display: none;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.success {
+            background: #c6f6d5;
+            color: #22543d;
+            border-left: 4px solid #48bb78;
+        }
+
+        .message.error {
+            background: #fed7d7;
+            color: #742a2a;
+            border-left: 4px solid #f56565;
+        }
+
+        .message.info {
+            background: #bee3f8;
+            color: #2c5282;
+            border-left: 4px solid #4299e1;
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+            display: none;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .stats-container {
+                grid-template-columns: 1fr;
+            }
+
+            table {
+                font-size: 0.9em;
+            }
+
+            th, td {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🎓 Biometric Attendance System</h1>
+            <p>Shri Ramswaroop Memorial University</p>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="stats-container">
+            <div class="stat-card total">
+                <h3>Total Students</h3>
+                <div class="number" id="total-students">0</div>
+            </div>
+            <div class="stat-card present">
+                <h3>Present Today</h3>
+                <div class="number" id="present-students">0</div>
+            </div>
+            <div class="stat-card absent">
+                <h3>Absent Today</h3>
+                <div class="number" id="absent-students">0</div>
+            </div>
+        </div>
+
+        <!-- Control Panel -->
+        <div class="control-panel">
+            <h2>📸 Attendance Control</h2>
+            <div id="message" class="message"></div>
+            <div class="spinner" id="spinner"></div>
+            
+            <div class="button-group">
+                <button class="btn-success" onclick="startCamera()">
+                    🎥 Start Face Recognition
+                </button>
+                <button class="btn-primary" onclick="refreshData()">
+                    🔄 Refresh Data
+                </button>
+                <button class="btn-danger" onclick="resetAttendance()">
+                    ⚠️ Reset Attendance
+                </button>
+            </div>
+        </div>
+
+        <!-- Student List -->
+        <div class="student-list">
+            <h2>📋 Student List</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Roll Number</th>
+                        <th>Name</th>
+                        <th>Status</th>
+                        <th>Last Attendance</th>
+                    </tr>
+                </thead>
+                <tbody id="student-table-body">
+                    <tr>
+                        <td colspan="4" style="text-align: center; color: #999;">
+                            Loading students...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </di
+    </div>
+
+<script src="https://cdn.jsdelivr.net/npm/appwrite@13.0.0"></script>
+
+<script>
+const client = new Appwrite.Client()
+  .setEndpoint('https://sgp.cloud.appwrite.io/v1')
+  .setProject('biometricsrmu');
+
+const databases = new Appwrite.Databases(client);
+
+const databaseId = "69e094c9000e2ef85c2a";
+const collectionId = "students";
+
+// Show message
+function showMessage(text, type = 'info') {
+    const messageBox = document.getElementById('message');
+    messageBox.textContent = text;
+    messageBox.className = `message ${type}`;
+    messageBox.style.display = 'block';
+
+    setTimeout(() => {
+        messageBox.style.display = 'none';
+    }, 3000);
+}
+
+// Spinner
+function showSpinner(show) {
+    document.getElementById('spinner').style.display = show ? 'block' : 'none';
+}
+
+// Load students from Appwrite
+async function loadStudents() {
+    try {
+        showSpinner(true);
+
+        const res = await databases.listDocuments(
+            DATABASE_ID,
+            COLLECTION_ID
+        );
+
+        const students = res.documents;
+
+        // Update stats
+        document.getElementById('total-students').textContent = students.length;
+
+        let present = 0;
+
+        students.forEach(student => {
+            if (student.attendance && student.attendance.length > 0) {
+                present++;
+            }
+        });
+
+        document.getElementById('present-students').textContent = present;
+        document.getElementById('absent-students').textContent = students.length - present;
+
+        // Fill table
+        const table = document.getElementById('student-table-body');
+        table.innerHTML = '';
+
+        students.forEach(student => {
+            const isPresent = student.attendance && student.attendance.length > 0;
+
+            table.innerHTML += `
+                <tr>
+                    <td>${student.rollNo}</td>
+                    <td>${student.name}</td>
+                    <td>${isPresent ? 'Present' : 'Absent'}</td>
+                    <td>${isPresent ? student.attendance.slice(-1)[0] : '-'}</td>
+                </tr>
+            `;
+        });
+
+        showSpinner(false);
+
+    } catch (err) {
+        showSpinner(false);
+        showMessage("Error loading students", "error");
+        console.error(err);
+    }
+}
+
+// Refresh button
+async function refreshData() {
+    showMessage("Refreshing data...", "info");
+    await loadStudents();
+}
+
+// ⚠️ IMPORTANT NOTE
+ function startCamera() {
+    showMessage("📸 Run 'python main.py' in terminal to start face recognition", "info");
+}
+// ⚠️ IMPORTANT NOTE
+function resetAttendance() {
+    showMessage("Reset must be done via backend (Python/Appwrite)", "info");
+}
+
+// Auto load
+window.addEventListener('load', () => {
+    loadStudents();
+
+    // Auto refresh every 5 seconds
+    setInterval(loadStudents, 5000);
+});
+
+</script>
+</body>
+</html>
